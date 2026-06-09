@@ -9,6 +9,7 @@ expansions, and bash-to-POSIX preprocessing.
 
 import logging
 import re
+from typing import Optional
 from dataclasses import dataclass, field
 
 from rpm_lockfile.vendor import bashlex
@@ -161,7 +162,7 @@ def _extract_condition_arch(node) -> list[str]:
 def _walk_nodes(
     nodes: list,
     ctx: _WalkContext,
-    arch_context: list[str] | None = None,
+    arch_context: Optional[list[str]] = None,
     in_conditional: bool = False,
 ):
     """
@@ -246,7 +247,7 @@ def _walk_if_node(node, ctx: _WalkContext):
 def _process_assignments(
     assignments: list,
     ctx: _WalkContext,
-    arch_context: list[str] | None,
+    arch_context: Optional[list[str]],
     in_conditional: bool,
 ):
     """
@@ -283,7 +284,7 @@ def _process_assignments(
                 ctx.shell_vars[var_name] = resolved
 
 
-def _detect_pkg_action(word_values: list[str], ctx: _WalkContext) -> tuple[str | None, int]:
+def _detect_pkg_action(word_values: list[str], ctx: _WalkContext) -> tuple[Optional[str], int]:
     """
     Detect install/update/upgrade action in a dnf/yum command.
 
@@ -366,7 +367,7 @@ def _classify_package_tokens(
     arch_resolved_tokens: set[str],
     action: str,
     ctx: _WalkContext,
-    arch_context: list[str] | None,
+    arch_context: Optional[list[str]],
 ):
     """
     Classify resolved tokens into packages, update targets, or
@@ -409,7 +410,7 @@ def _classify_package_tokens(
 def _process_command_node(
     node,
     ctx: _WalkContext,
-    arch_context: list[str] | None = None,
+    arch_context: Optional[list[str]] = None,
     in_conditional: bool = False,
 ):
     """
@@ -474,7 +475,7 @@ def _extract_subshell_packages(subshell_body: str) -> str:
 
 def _parse_and_walk(
     run_values: list[str],
-    env_vars: dict[str, str] | None = None,
+    env_vars: Optional[dict[str, str]] = None,
 ) -> _WalkContext:
     """
     Single pass: preprocess, parse with bashlex, and walk all RUN bodies.
@@ -505,7 +506,7 @@ def _parse_and_walk(
 
 def analyze_run_commands(
     run_values: list[str],
-    env_vars: dict[str, str] | None = None,
+    env_vars: Optional[dict[str, str]] = None,
 ) -> RunCommandResult:
     """
     Single-pass analysis of RUN command bodies.

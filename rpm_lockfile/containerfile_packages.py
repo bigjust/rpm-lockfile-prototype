@@ -10,6 +10,7 @@ commands.
 import logging
 import re
 import shlex
+from typing import Optional
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -68,7 +69,7 @@ def _strip_quotes(value: str) -> str:
     return value
 
 
-def collect_stage_vars(entries: list[dict], inherited_vars: dict[str, str] | None = None) -> dict[str, str]:
+def collect_stage_vars(    entries: list[dict], inherited_vars: Optional[dict[str, str]] = None) -> dict[str, str]:
     """
     Collect ARG and ENV variable definitions from DockerfileParser
     structure entries.
@@ -109,7 +110,7 @@ def collect_stage_vars(entries: list[dict], inherited_vars: dict[str, str] | Non
 
 def build_copy_map(
     stage_entries: list[dict],
-    env_vars: dict[str, str] | None = None,
+    env_vars: Optional[dict[str, str]] = None,
 ) -> dict[str, str]:
     """
     Build a mapping from container destination paths to source paths
@@ -180,7 +181,7 @@ def _resolve_file_from_copy_map(
     resolved_path: str,
     copy_map: dict[str, str],
     source_dir: Path,
-) -> Path | None:
+) -> Optional[Path]:
     """
     Look up a container path in copy_map and return the source file.
     Falls back to looking for the basename directly in source_dir
@@ -214,8 +215,8 @@ def extract_packages_from_file_installs(
     run_values: list[str],
     copy_map: dict[str, str],
     source_dir: Path,
-    env_vars: dict[str, str] | None = None,
-    arches: list[str] | None = None,
+    env_vars: Optional[dict[str, str]] = None,
+    arches: Optional[list[str]] = None,
 ) -> tuple[list[str], dict[str, list[str]]]:
     """
     Extract package names from install commands that read packages from
@@ -314,9 +315,9 @@ def extract_packages_from_file_installs(
 
 def extract_packages_from_scripts(
     run_values: list[str],
-    source_dir: Path | None = None,
-    copy_map: dict[str, str] | None = None,
-    env_vars: dict[str, str] | None = None,
+    source_dir: Optional[Path] = None,
+    copy_map: Optional[dict[str, str]] = None,
+    env_vars: Optional[dict[str, str]] = None,
 ) -> StagePackages:
     """
     Find shell scripts invoked in RUN commands and extract yum/dnf
@@ -441,7 +442,7 @@ def extract_packages_from_scripts(
 
 def analyze_containerfile_stages(
     containerfile_path: Path,
-    source_dir: Path | None = None,
+    source_dir: Optional[Path] = None,
 ) -> list[StagePackages]:
     """
     Parse a Containerfile and return per-stage package analysis.
@@ -532,10 +533,10 @@ def analyze_containerfile_stages(
 
 def select_stage(
     stages: list[StagePackages],
-    stage_num: int | None = None,
-    stage_name: str | None = None,
-    image_pattern: str | None = None,
-) -> StagePackages | None:
+    stage_num: Optional[int] = None,
+    stage_name: Optional[str] = None,
+    image_pattern: Optional[str] = None,
+) -> Optional[StagePackages]:
     """
     Select a single stage from analysis results, using the same matching
     logic as extract_image(): stage number (1-indexed), stage name (AS alias),
@@ -547,7 +548,7 @@ def select_stage(
         stage_name (str | None): Stage alias (FROM ... AS name) to match.
         image_pattern (str | None): Regex to match against base image.
     Return Value(s):
-        StagePackages | None: Matching stage, or None if no match.
+        Optional[StagePackages]: Matching stage, or None if no match.
     """
     if not stages:
         return None
